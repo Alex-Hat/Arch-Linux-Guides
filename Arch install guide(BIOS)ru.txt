@@ -163,5 +163,4 @@ $ git clone https://aur.archlinux.org/yay.git
 $ cd yay 
 $ makepkg -si
 
-
-Готово!Arch Linux установлен на ваш PC!Теперь перезагрузите компьютер и можете использовать свою новую ОС :)
+Готово!
