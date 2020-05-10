@@ -1,0 +1,167 @@
+УСТАНОВКА ARCH LINUX
+
+
+<Делаем загрузочную флешку с помощью dd в линукс>
+
+$ dd if=/путь/archlinux.iso of=/dev/диск status=progress
+
+
+<Или с помощью Rufus,Unetbootin или других в Windows>
+
+Загружаемся с флешки и начинаем установку.
+
+
+<Проверяем подключение к сети>
+
+$ ping archlinux.org
+
+для беспроводного подключения используйте программу wifi-menu
+
+$ wifi-menu
+
+РАЗМЕТКА ДИСКА
+
+/dev/sda1 - boot - ext2 - 500M
+/dev/sda2 - root - ext4 - 30G+
+/dev/sda3 - swap - linuxswap - Обьём ОЗУ
+/dev/sda4 - home - ext4 - Остаток
+
+<Создаём разделы с помощью cfdisk>
+
+<Форматируем разделы>
+
+$ mkfs.ext2 /dev/sda1 -L boot
+$ mkfs.ext4 /dev/sda2 -L root
+$ mkswap /dev/sda3 -L swap
+$ mkfs.ext4 /dev/sda4 -L home
+
+<Монтируем разделы>
+
+$ mount /dev/sda2 /mnt
+$ mkdir /mnt/{boot,home}
+$ mount /dev/sda1 /mnt/boot
+$ mount /dev/sda4 /mnt/home
+$ swapon /dev/sda3
+
+<Установка пакетов>
+
+$ pacstrap -i /mnt base base-devel linux 
+linux-firmware dhcpcd nano intel(или amd)-ucode reflector grub
+
+
+ПЕРВИЧНАЯ НАСТРОЙКА СИСТЕМЫ
+
+<Генерация fstab>
+
+$ genfstab -p /mnt >> /mnt/etc/fstab
+
+<Вход в установленную систему>
+
+$ arch-chroot /mnt
+
+<Добавим русскую локаль в систему>
+
+$ nano /etc/locale.gen
+
+Раскомментируйте(уберите # вначале) строку #en_US.UTF-8 UTF-8 и строку #ru_RU.UTF-8 UTF-8
+
+$ locale-gen
+
+<Установка загрузчика>
+
+$ grub-install /dev/sda
+
+$ grub-mkconfig -o /boot/grub/grub.cfg
+
+<Установка пароля для root>
+$ passwd
+
+выходим из chroot
+$ exit
+
+<Отмонтируем разделы>
+
+$ umount -R /mnt
+
+и перезагружаем ПК 
+
+$ reboot
+
+ПОСЛЕ ПЕРЕЗАГРУЗКИ
+
+<Установка hostname>
+
+$ echo имя >> /etc/hostname
+
+<Установка временной зоны>
+
+$ timedatectl set-timezone Europe/Kiev
+
+<Локализация системы>
+
+$ localectl set-keymap ru
+$ setfont cyr-sun16
+$ localectl set-locale LANG="ru_RU.UTF-8"
+$ export LANG=ru_RU.UTF-8
+$ nano /etc/vconsole.conf
+
+Добавим строку FONT=cyr-sun16 в /etc/vconsole.conf.
+
+чтобы изменения вступили в силу перезагрузите PC
+
+<Обновление загрузочного RAM диска>
+
+$ mkinitcpio -p linux
+
+<Обновление grub.cfg>
+
+$ grub-mkconfig -o /boot/grub/grub.cfg
+
+<Настройка pacman>
+
+$ nano /etc/pacman.conf
+
+Раскоментируйте (уберите #) строки:
+
+#[multilib] 
+#Include = /etc/pacman.d/mirrorlist
+
+<Добавление пользователя>
+
+$ useradd -m -g users -G wheel,audio -s /bin/bash имя
+
+и установите пароль
+
+$ passwd имя
+
+<Настройка сети для проводов>
+
+$ systemctl enable dhcpcd
+$ systemctl start dhcpcd
+
+для беспроводной сети используйте wifi-menu
+
+$ wifi-menu
+
+
+<Обновление пакетов>
+
+$ pacman -Syy
+$ pacman -Su
+
+<Установка и настройка sudo>
+
+$ pacman -S sudo
+$ nano /etc/sudoers
+
+раскомментируем строку # %wheel ALL=(ALL) ALL
+
+<Установка yay для использования AUR>
+
+$ sudo pacman -S git
+$ git clone https://aur.archlinux.org/yay.git
+$ cd yay 
+$ makepkg -si
+
+
+Готово!Arch Linux установлен на ваш PC!Теперь перезагрузите компьютер и можете использовать свою новую ОС :)
